@@ -72,7 +72,6 @@ class Comment(models.Model):
 class PostReaction(models.Model):
     """게시글 반응 모델 (다양한 이모지 반응)"""
     REACTION_CHOICES = [
-        ('like', '좋아요'),
         ('heart', '하트'),
         ('laugh', '웃음'),
         ('wow', '놀람'),
@@ -86,7 +85,7 @@ class PostReaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성일')
     
     class Meta:
-        unique_together = ['post', 'session_id']  # 한 사용자는 게시글당 하나의 반응만 가능
+        unique_together = ['post', 'session_id', 'reaction_type']  # 한 사용자는 게시글당 반응 타입별로 하나씩 가능
         verbose_name = '게시글 반응'
         verbose_name_plural = '게시글 반응들'
 
@@ -94,7 +93,6 @@ class PostReaction(models.Model):
 class CommentReaction(models.Model):
     """댓글 반응 모델 (다양한 이모지 반응)"""
     REACTION_CHOICES = [
-        ('like', '좋아요'),
         ('heart', '하트'),
         ('laugh', '웃음'),
         ('wow', '놀람'),
@@ -108,6 +106,6 @@ class CommentReaction(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성일')
     
     class Meta:
-        unique_together = ['comment', 'session_id']  # 한 사용자는 댓글당 하나의 반응만 가능
+        unique_together = ['comment', 'session_id', 'reaction_type']  # 한 사용자는 댓글당 반응 타입별로 하나씩 가능
         verbose_name = '댓글 반응'
         verbose_name_plural = '댓글 반응들'

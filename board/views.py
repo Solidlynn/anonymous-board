@@ -409,7 +409,7 @@ def toggle_post_reaction(request, post_id):
         data = json.loads(request.body)
         reaction_type = data.get('reaction_type')
         
-        if reaction_type not in ['like', 'heart', 'laugh', 'wow', 'sad']:
+        if reaction_type not in ['heart', 'laugh', 'wow', 'sad']:
             return JsonResponse({'success': False, 'error': '유효하지 않은 반응 타입입니다.'})
         
         post = get_object_or_404(Post, id=post_id)
@@ -419,22 +419,17 @@ def toggle_post_reaction(request, post_id):
             request.session.create()
             session_id = request.session.session_key
         
-        # 기존 반응 확인
+        # 기존 반응 확인 (특정 반응 타입)
         existing_reaction = PostReaction.objects.filter(
             post=post, 
-            session_id=session_id
+            session_id=session_id,
+            reaction_type=reaction_type
         ).first()
         
         if existing_reaction:
-            if existing_reaction.reaction_type == reaction_type:
-                # 같은 반응이면 제거
-                existing_reaction.delete()
-                is_active = False
-            else:
-                # 다른 반응이면 변경
-                existing_reaction.reaction_type = reaction_type
-                existing_reaction.save()
-                is_active = True
+            # 같은 반응이면 제거
+            existing_reaction.delete()
+            is_active = False
         else:
             # 새 반응 생성
             PostReaction.objects.create(
@@ -468,7 +463,7 @@ def toggle_comment_reaction(request, comment_id):
         data = json.loads(request.body)
         reaction_type = data.get('reaction_type')
         
-        if reaction_type not in ['like', 'heart', 'laugh', 'wow', 'sad']:
+        if reaction_type not in ['heart', 'laugh', 'wow', 'sad']:
             return JsonResponse({'success': False, 'error': '유효하지 않은 반응 타입입니다.'})
         
         comment = get_object_or_404(Comment, id=comment_id)
@@ -478,22 +473,17 @@ def toggle_comment_reaction(request, comment_id):
             request.session.create()
             session_id = request.session.session_key
         
-        # 기존 반응 확인
+        # 기존 반응 확인 (특정 반응 타입)
         existing_reaction = CommentReaction.objects.filter(
             comment=comment, 
-            session_id=session_id
+            session_id=session_id,
+            reaction_type=reaction_type
         ).first()
         
         if existing_reaction:
-            if existing_reaction.reaction_type == reaction_type:
-                # 같은 반응이면 제거
-                existing_reaction.delete()
-                is_active = False
-            else:
-                # 다른 반응이면 변경
-                existing_reaction.reaction_type = reaction_type
-                existing_reaction.save()
-                is_active = True
+            # 같은 반응이면 제거
+            existing_reaction.delete()
+            is_active = False
         else:
             # 새 반응 생성
             CommentReaction.objects.create(

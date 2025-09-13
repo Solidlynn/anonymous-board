@@ -36,12 +36,6 @@
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         <button class="btn btn-outline-primary reaction-btn emoji-reaction" 
                                 data-post-id="{{ post.id }}" 
-                                data-reaction-type="like"
-                                title="좋아요">
-                            👍 <span class="reaction-count">{{ post.likes_count }}</span>
-                        </button>
-                        <button class="btn btn-outline-primary reaction-btn emoji-reaction" 
-                                data-post-id="{{ post.id }}" 
                                 data-reaction-type="heart"
                                 title="하트">
                             ❤️ <span class="reaction-count">{{ post.hearts_count }}</span>
@@ -104,12 +98,6 @@
                                 <!-- 댓글 반응 -->
                                 <div class="comment-reactions">
                                     <div class="d-flex flex-wrap gap-1">
-                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
-                                                data-comment-id="{{ comment.id }}" 
-                                                data-reaction-type="like"
-                                                title="좋아요">
-                                            👍 <span class="reaction-count">{{ comment.likes_count }}</span>
-                                        </button>
                                         <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
                                                 data-comment-id="{{ comment.id }}" 
                                                 data-reaction-type="heart"
