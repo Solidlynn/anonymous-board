@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
@@ -404,3 +404,8 @@ def delete_post(request, post_id):
             'success': False, 
             'error': '게시글 삭제 중 오류가 발생했습니다.'
         })
+
+
+def health_check(request):
+    """Railway healthcheck 엔드포인트"""
+    return HttpResponse("OK", status=200)

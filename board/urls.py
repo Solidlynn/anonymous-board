@@ -5,6 +5,7 @@ app_name = 'board'
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('health/', views.health_check, name='health_check'),
     path('post/<uuid:post_id>/', views.post_detail, name='post_detail'),
     path('api/post/create/', views.create_post, name='create_post'),
     path('api/post/<uuid:post_id>/comment/', views.create_comment, name='create_comment'),
