@@ -6,7 +6,14 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "anonymous_board.settings")
+    # 배포 환경에서는 production settings 사용
+    settings_module = 'anonymous_board.settings'
+    if os.environ.get('DJANGO_SETTINGS_MODULE'):
+        settings_module = os.environ.get('DJANGO_SETTINGS_MODULE')
+    elif os.environ.get('RAILWAY_ENVIRONMENT'):
+        settings_module = 'anonymous_board.settings_production'
+    
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
