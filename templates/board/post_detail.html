@@ -59,16 +59,16 @@
                 <!-- 댓글 작성 폼 -->
                 <form id="commentForm" class="mb-4">
                     {% csrf_token %}
+                    <div class="mb-3">
+                        <textarea class="form-control" id="commentContent" name="content" rows="3" 
+                                  placeholder="댓글을 입력하세요" required></textarea>
+                    </div>
                     <div class="row">
                         <div class="col-md-8">
-                            <textarea class="form-control" id="commentContent" name="content" rows="3" 
-                                      placeholder="댓글을 입력하세요" required></textarea>
+                            <input type="text" class="form-control" id="commentAuthor" name="author_nickname" 
+                                   placeholder="닉네임 (선택사항)" maxlength="50">
                         </div>
                         <div class="col-md-4">
-                            <div class="mb-2">
-                                <input type="text" class="form-control" id="commentAuthor" name="author_nickname" 
-                                       placeholder="닉네임 (선택사항)" maxlength="50">
-                            </div>
                             <button type="submit" class="btn btn-primary w-100">
                                 <i class="fas fa-paper-plane me-1"></i>댓글 작성
                             </button>
@@ -189,12 +189,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const author = document.getElementById('commentAuthor').value.trim() || '익명';
             
             if (!content) {
-                showNotification('댓글 내용을 입력해주세요.', 'error');
+                alert('댓글 내용을 입력해주세요.');
                 return;
             }
             
             try {
-                const csrfToken = getCookie('csrftoken');
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const response = await fetch(`/api/post/{{ post.id }}/comment/`, {
                     method: 'POST',
                     headers: {
@@ -210,15 +210,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 if (result.success) {
-                    showNotification('댓글이 작성되었습니다!', 'success');
+                    alert('댓글이 작성되었습니다!');
                     document.getElementById('commentContent').value = '';
                     document.getElementById('commentAuthor').value = '';
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showNotification(result.error || '댓글 작성에 실패했습니다.', 'error');
+                    alert(result.error || '댓글 작성에 실패했습니다.');
                 }
             } catch (error) {
-                showNotification('네트워크 오류가 발생했습니다.', 'error');
+                console.error('Error:', error);
+                alert('네트워크 오류가 발생했습니다.');
             }
         });
     }

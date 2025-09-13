@@ -397,33 +397,16 @@ const utils = {
     // 게시글 삭제 기능
     deletePost: async function(postId) {
         try {
-            // 삭제 비밀번호 입력 받기
-            const password = prompt('게시글을 삭제하려면 4자리 숫자 비밀번호를 입력하세요:');
-            
-            if (!password) {
-                return;
-            }
-            
-            if (!/^\d{4}$/.test(password)) {
-                alert('4자리 숫자를 입력해주세요.');
-                return;
-            }
-            
             // 삭제 확인
             if (!confirm('정말로 이 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.')) {
                 return;
             }
             
-            const csrfToken = getCookie('csrftoken');
             const response = await fetch(`/api/post/${postId}/delete/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                },
-                body: JSON.stringify({
-                    delete_password: password
-                })
+                }
             });
             
             const result = await response.json();
