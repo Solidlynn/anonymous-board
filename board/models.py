@@ -18,6 +18,11 @@ class Post(models.Model):
     likes_count = models.PositiveIntegerField(default=0, verbose_name='좋아요 수')
     dislikes_count = models.PositiveIntegerField(default=0, verbose_name='싫어요 수')
     
+    # 삭제 관련
+    is_deleted = models.BooleanField(default=False, verbose_name='삭제 여부')
+    deleted_at = models.DateTimeField(null=True, blank=True, verbose_name='삭제일')
+    delete_password = models.CharField(max_length=100, null=True, blank=True, verbose_name='삭제 비밀번호')
+    
     class Meta:
         ordering = ['-created_at']
         verbose_name = '게시글'

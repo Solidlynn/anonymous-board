@@ -61,11 +61,10 @@
                                     title="좋아요">
                                 <i class="fas fa-thumbs-up"></i> {{ post.likes_count }}
                             </button>
-                            <button class="btn btn-sm btn-outline-danger reaction-btn ms-1" 
+                            <button class="btn btn-sm btn-outline-danger ms-2 delete-post-btn" 
                                     data-post-id="{{ post.id }}" 
-                                    data-reaction-type="dislike"
-                                    title="싫어요">
-                                <i class="fas fa-thumbs-down"></i> {{ post.dislikes_count }}
+                                    title="게시글 삭제">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </div>

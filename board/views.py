@@ -15,7 +15,7 @@ def index(request):
     """메인 게시판 페이지"""
     # 검색 기능
     search_query = request.GET.get('search', '')
-    posts = Post.objects.all()
+    posts = Post.objects.filter(is_deleted=False)
     
     if search_query:
         posts = posts.filter(
@@ -38,7 +38,7 @@ def index(request):
 
 def post_detail(request, post_id):
     """게시글 상세 페이지"""
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post, id=post_id, is_deleted=False)
     
     # 조회수 증가
     post.view_count += 1
@@ -367,3 +367,40 @@ def check_updates(request):
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': '업데이트 확인 중 오류가 발생했습니다.'})
+
+
+@require_http_methods(["POST"])
+def delete_post(request, post_id):
+    """게시글 삭제"""
+    try:
+        post = get_object_or_404(Post, id=post_id)
+        
+        data = json.loads(request.body)
+        delete_password = data.get('delete_password', '')
+        
+        # 삭제 비밀번호 확인 (간단한 4자리 숫자)
+        if not delete_password or len(delete_password) != 4 or not delete_password.isdigit():
+            return JsonResponse({
+                'success': False, 
+                'error': '올바른 4자리 숫자 비밀번호를 입력해주세요.'
+            })
+        
+        # 게시글 삭제 처리
+        post.is_deleted = True
+        post.deleted_at = timezone.now()
+        post.delete_password = delete_password
+        post.save()
+        
+        # 마지막 확인 시간 업데이트 (다른 사용자들에게 알림)
+        request.session['last_check_time'] = timezone.now().isoformat()
+        
+        return JsonResponse({
+            'success': True,
+            'message': '게시글이 삭제되었습니다.'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False, 
+            'error': '게시글 삭제 중 오류가 발생했습니다.'
+        })

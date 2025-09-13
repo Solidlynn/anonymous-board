@@ -168,6 +168,12 @@ function initializeEventListeners() {
         btn.addEventListener('click', handleReactionClick);
     });
     
+    // 삭제 버튼 이벤트
+    const deleteButtons = document.querySelectorAll('.delete-post-btn');
+    deleteButtons.forEach(btn => {
+        btn.addEventListener('click', handleDeleteClick);
+    });
+    
     // 키보드 단축키
     document.addEventListener('keydown', handleKeyboardShortcuts);
 }
@@ -241,6 +247,14 @@ async function handleReactionClick(event) {
         console.error('반응 처리 오류:', error);
         showNotification('네트워크 오류가 발생했습니다.', 'error');
     }
+}
+
+// 삭제 버튼 클릭 처리
+async function handleDeleteClick(event) {
+    event.preventDefault();
+    const button = event.target.closest('.delete-post-btn');
+    const postId = button.dataset.postId;
+    await utils.deletePost(postId);
 }
 
 // 반응 버튼 업데이트
@@ -377,6 +391,53 @@ const utils = {
                 console.error('로컬 스토리지 읽기 실패:', e);
                 return null;
             }
+        }
+    },
+    
+    // 게시글 삭제 기능
+    deletePost: async function(postId) {
+        try {
+            // 삭제 비밀번호 입력 받기
+            const password = prompt('게시글을 삭제하려면 4자리 숫자 비밀번호를 입력하세요:');
+            
+            if (!password) {
+                return;
+            }
+            
+            if (!/^\d{4}$/.test(password)) {
+                alert('4자리 숫자를 입력해주세요.');
+                return;
+            }
+            
+            // 삭제 확인
+            if (!confirm('정말로 이 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.')) {
+                return;
+            }
+            
+            const csrfToken = getCookie('csrftoken');
+            const response = await fetch(`/api/post/${postId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    delete_password: password
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('게시글이 삭제되었습니다.');
+                location.reload(); // 페이지 새로고침
+            } else {
+                alert('삭제 실패: ' + result.error);
+            }
+            
+        } catch (error) {
+            console.error('게시글 삭제 오류:', error);
+            alert('게시글 삭제 중 오류가 발생했습니다.');
         }
     }
 };
