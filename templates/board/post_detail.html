@@ -17,12 +17,12 @@
                 </div>
                 
                 <div class="post-meta mb-4">
-                    <div class="d-flex align-items-center text-muted">
-                        <i class="fas fa-user-secret me-2"></i>
+                    <div class="d-flex align-items-center text-white">
+                        <i class="fas fa-crown me-2 text-warning"></i>
                         <span class="me-3">{{ post.author_nickname }}</span>
-                        <i class="fas fa-clock me-2"></i>
+                        <i class="fas fa-calendar-alt me-2 text-info"></i>
                         <span class="me-3">{{ post.created_at|date:"Y년 m월 d일 H:i" }}</span>
-                        <i class="fas fa-eye me-2"></i>
+                        <i class="fas fa-eye me-2 text-success"></i>
                         <span>{{ post.view_count }} 조회</span>
                     </div>
                 </div>
@@ -86,44 +86,16 @@
                 <!-- 댓글 목록 -->
                 <div class="comments-list">
                     {% for comment in comments %}
-                    <div class="comment-item border-bottom pb-3 mb-3">
+                    <div class="comment-item border-bottom pb-4 mb-4">
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="comment-content flex-grow-1">
                                 <div class="comment-meta mb-2">
-                                    <strong class="text-primary">{{ comment.author_nickname }}</strong>
-                                    <small class="text-muted ms-2">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                                    <i class="fas fa-comment me-2 text-primary"></i>
+                                    <strong class="text-white">{{ comment.author_nickname }}</strong>
+                                    <i class="fas fa-clock ms-3 me-1 text-info"></i>
+                                    <small class="text-white ms-1">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
                                 </div>
-                                <p class="mb-2">{{ comment.content|linebreaks }}</p>
-                                
-                                <!-- 댓글 반응 -->
-                                <div class="comment-reactions">
-                                    <div class="d-flex flex-wrap gap-1">
-                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
-                                                data-comment-id="{{ comment.id }}" 
-                                                data-reaction-type="heart"
-                                                title="하트">
-                                            ❤️ <span class="reaction-count">{{ comment.hearts_count }}</span>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
-                                                data-comment-id="{{ comment.id }}" 
-                                                data-reaction-type="laugh"
-                                                title="웃음">
-                                            😂 <span class="reaction-count">{{ comment.laughs_count }}</span>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
-                                                data-comment-id="{{ comment.id }}" 
-                                                data-reaction-type="wow"
-                                                title="놀람">
-                                            😮 <span class="reaction-count">{{ comment.wows_count }}</span>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
-                                                data-comment-id="{{ comment.id }}" 
-                                                data-reaction-type="sad"
-                                                title="슬픔">
-                                            😢 <span class="reaction-count">{{ comment.sads_count }}</span>
-                                        </button>
-                                    </div>
-                                </div>
+                                <p class="mb-3 text-white">{{ comment.content|linebreaks }}</p>
                             </div>
                         </div>
                     </div>
@@ -211,7 +183,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const author = document.getElementById('commentAuthor').value.trim() || '익명';
             
             if (!content) {
-                alert('댓글 내용을 입력해주세요.');
                 return;
             }
             
@@ -232,16 +203,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('댓글이 작성되었습니다!');
                     document.getElementById('commentContent').value = '';
                     document.getElementById('commentAuthor').value = '';
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    alert(result.error || '댓글 작성에 실패했습니다.');
+                    setTimeout(() => location.reload(), 500);
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('네트워크 오류가 발생했습니다.');
             }
         });
     }

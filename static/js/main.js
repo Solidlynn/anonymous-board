@@ -413,14 +413,10 @@ const utils = {
             const result = await response.json();
 
             if (result.success) {
-                alert('게시글이 삭제되었습니다.');
                 window.location.href = '/';
-            } else {
-                alert(result.error || '게시글 삭제에 실패했습니다.');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('네트워크 오류가 발생했습니다.');
         }
     },
     
