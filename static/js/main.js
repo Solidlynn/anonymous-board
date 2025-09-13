@@ -29,6 +29,22 @@ function generateUUID() {
     });
 }
 
+// CSRF 토큰 가져오기
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 // 폴링 초기화
 function initializePolling() {
     updateConnectionStatus(true);
@@ -197,10 +213,12 @@ async function handleReactionClick(event) {
             ? `/api/post/${targetId}/reaction/`
             : `/api/comment/${targetId}/reaction/`;
         
+        const csrfToken = getCookie('csrftoken');
         const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
             },
             body: JSON.stringify({
                 reaction_type: reactionType,
