@@ -48,15 +48,15 @@ body {
     border: none;
 }
 
-/* 게시글 카드 */
+/* 게시글 카드 스타일 */
 .post-card {
-    transition: all 0.3s ease;
-    border-left: 4px solid transparent;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border: 1px solid #e0e0e0;
 }
 
 .post-card:hover {
-    border-left-color: var(--primary-color);
-    transform: translateX(5px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .post-card .card-title a {
@@ -66,6 +66,17 @@ body {
 
 .post-card .card-title a:hover {
     color: var(--primary-color);
+}
+
+/* 삭제 버튼 호버 효과 */
+.delete-btn-hover {
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.delete-btn-hover:hover {
+    background-color: #dc3545 !important;
+    color: white !important;
 }
 
 /* 반응 버튼 */

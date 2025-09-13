@@ -465,17 +465,11 @@ const utils = {
                 
                 if (button) {
                     if (result.is_active) {
-                        button.classList.remove('btn-outline-primary', 'btn-outline-danger', 'btn-outline-warning', 'btn-outline-info', 'btn-outline-secondary');
-                        button.classList.add('btn-primary', 'btn-danger', 'btn-warning', 'btn-info', 'btn-secondary'.split(' ').find(cls => 
-                            button.classList.contains(cls.replace('btn-', 'btn-outline-'))
-                        ) || 'btn-primary');
+                        button.classList.remove('btn-outline-primary');
+                        button.classList.add('btn-primary');
                     } else {
-                        button.classList.remove('btn-primary', 'btn-danger', 'btn-warning', 'btn-info', 'btn-secondary');
-                        const outlineClass = reactionType === 'like' ? 'btn-outline-primary' :
-                                           reactionType === 'heart' ? 'btn-outline-danger' :
-                                           reactionType === 'laugh' ? 'btn-outline-warning' :
-                                           reactionType === 'wow' ? 'btn-outline-info' : 'btn-outline-secondary';
-                        button.classList.add(outlineClass);
+                        button.classList.remove('btn-primary');
+                        button.classList.add('btn-outline-primary');
                     }
                 }
             }
