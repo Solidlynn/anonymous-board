@@ -431,8 +431,8 @@ def toggle_post_reaction(request, post_id):
             existing_reaction.delete()
             is_active = False
         else:
-            # 새 반응 생성
-            PostReaction.objects.create(
+            # 새 반응 생성 (get_or_create로 중복 방지)
+            reaction, created = PostReaction.objects.get_or_create(
                 post=post,
                 session_id=session_id,
                 reaction_type=reaction_type
@@ -485,8 +485,8 @@ def toggle_comment_reaction(request, comment_id):
             existing_reaction.delete()
             is_active = False
         else:
-            # 새 반응 생성
-            CommentReaction.objects.create(
+            # 새 반응 생성 (get_or_create로 중복 방지)
+            reaction, created = CommentReaction.objects.get_or_create(
                 comment=comment,
                 session_id=session_id,
                 reaction_type=reaction_type

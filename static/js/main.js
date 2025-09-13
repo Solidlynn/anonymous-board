@@ -423,62 +423,112 @@ const utils = {
             alert('네트워크 오류가 발생했습니다.');
         }
     },
-
-    // 이모지 반응 토글 기능
-    toggleEmojiReaction: async function(targetType, targetId, reactionType) {
-        try {
-            const csrfToken = getCookie('csrftoken');
-            const url = targetType === 'post' 
-                ? `/api/post/${targetId}/reaction/` 
-                : `/api/comment/${targetId}/reaction/`;
+    
+    toggleEmojiReaction: async (targetType, targetId, reactionType) => {
+        // 디바운싱: 같은 반응에 대한 중복 요청 방지
+        const key = `${targetType}-${targetId}-${reactionType}`;
+        if (utils.reactionTimeouts && utils.reactionTimeouts[key]) {
+            clearTimeout(utils.reactionTimeouts[key]);
+        }
+        
+        if (!utils.reactionTimeouts) {
+            utils.reactionTimeouts = {};
+        }
+        
+        // 즉시 UI 업데이트 (낙관적 업데이트)
+        const button = document.querySelector(
+            targetType === 'post' 
+                ? `[data-post-id="${targetId}"][data-reaction-type="${reactionType}"]`
+                : `[data-comment-id="${targetId}"][data-reaction-type="${reactionType}"]`
+        );
+        
+        if (button) {
+            button.disabled = true; // 중복 클릭 방지
             
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                },
-                body: JSON.stringify({
-                    reaction_type: reactionType
-                })
-            });
-
-            const result = await response.json();
-            
-            if (result.success) {
-                // 해당 버튼의 카운트 업데이트
-                const selector = targetType === 'post' 
-                    ? `[data-post-id="${targetId}"][data-reaction-type="${reactionType}"] .reaction-count`
-                    : `[data-comment-id="${targetId}"][data-reaction-type="${reactionType}"] .reaction-count`;
+            // 현재 상태 토글
+            const isActive = button.classList.contains('btn-primary');
+            if (isActive) {
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-outline-primary');
+            } else {
+                button.classList.remove('btn-outline-primary');
+                button.classList.add('btn-primary');
+            }
+        }
+        
+        utils.reactionTimeouts[key] = setTimeout(async () => {
+            try {
+                const url = targetType === 'post' 
+                    ? `/api/posts/${targetId}/toggle-reaction/`
+                    : `/api/comments/${targetId}/toggle-reaction/`;
                 
-                const countElement = document.querySelector(selector);
-                if (countElement) {
-                    countElement.textContent = result.count;
-                }
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        reaction_type: reactionType
+                    })
+                });
                 
-                // 버튼 스타일 업데이트 (활성/비활성)
-                const button = document.querySelector(
-                    targetType === 'post' 
-                        ? `[data-post-id="${targetId}"][data-reaction-type="${reactionType}"]`
-                        : `[data-comment-id="${targetId}"][data-reaction-type="${reactionType}"]`
-                );
-                
-                if (button) {
-                    if (result.is_active) {
-                        button.classList.remove('btn-outline-primary');
-                        button.classList.add('btn-primary');
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        // 카운트 업데이트
+                        const selector = targetType === 'post' 
+                            ? `[data-post-id="${targetId}"][data-reaction-type="${reactionType}"] .reaction-count`
+                            : `[data-comment-id="${targetId}"][data-reaction-type="${reactionType}"] .reaction-count`;
+                        
+                        const countElement = document.querySelector(selector);
+                        if (countElement) {
+                            countElement.textContent = result.count;
+                        }
+                        
+                        // 서버 응답에 따라 버튼 상태 최종 확정
+                        if (button) {
+                            if (result.is_active) {
+                                button.classList.remove('btn-outline-primary');
+                                button.classList.add('btn-primary');
+                            } else {
+                                button.classList.remove('btn-primary');
+                                button.classList.add('btn-outline-primary');
+                            }
+                        }
                     } else {
-                        button.classList.remove('btn-primary');
-                        button.classList.add('btn-outline-primary');
+                        // 에러 시 원래 상태로 복원
+                        if (button) {
+                            const isActive = button.classList.contains('btn-primary');
+                            if (isActive) {
+                                button.classList.remove('btn-primary');
+                                button.classList.add('btn-outline-primary');
+                            } else {
+                                button.classList.remove('btn-outline-primary');
+                                button.classList.add('btn-primary');
+                            }
+                        }
                     }
                 }
+            } catch (error) {
+                console.error('Reaction error:', error);
+                // 에러 시 원래 상태로 복원
+                if (button) {
+                    const isActive = button.classList.contains('btn-primary');
+                    if (isActive) {
+                        button.classList.remove('btn-primary');
+                        button.classList.add('btn-outline-primary');
+                    } else {
+                        button.classList.remove('btn-outline-primary');
+                        button.classList.add('btn-primary');
+                    }
+                }
+            } finally {
+                if (button) {
+                    button.disabled = false; // 버튼 다시 활성화
+                }
+                delete utils.reactionTimeouts[key];
             }
-        } catch (error) {
-            console.error('Reaction error:', error);
-        }
+        }, 150); // 150ms 디바운싱
     }
 };
-
-// 전역으로 유틸리티 함수 노출
-window.showNotification = showNotification;
-window.utils = utils;
