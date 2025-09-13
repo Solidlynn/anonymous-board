@@ -29,7 +29,10 @@ class BoardConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message_type = text_data_json.get('type')
         
-        if message_type == 'new_post':
+        if message_type == 'ping':
+            # 하트비트 응답
+            await self.send(text_data=json.dumps({'type': 'pong'}))
+        elif message_type == 'new_post':
             await self.handle_new_post(text_data_json)
         elif message_type == 'new_comment':
             await self.handle_new_comment(text_data_json)

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ post.title }} - 사내 익명 게시판{% endblock %}
+{% block title %}{{ post.title }} - 랩포 익명 게시판{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -59,6 +59,7 @@
             <div class="card-body">
                 <!-- 댓글 작성 폼 -->
                 <form id="commentForm" class="mb-4">
+                    {% csrf_token %}
                     <div class="row">
                         <div class="col-md-8">
                             <textarea class="form-control" id="commentContent" name="content" rows="3" 
@@ -196,6 +197,22 @@ function generateUUID() {
     });
 }
 
+// CSRF 토큰 가져오기
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 // 댓글 작성 폼 처리
 document.getElementById('commentForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -209,10 +226,12 @@ document.getElementById('commentForm').addEventListener('submit', async function
     }
     
     try {
+        const csrfToken = getCookie('csrftoken');
         const response = await fetch(`/api/post/{{ post.id }}/comment/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
             },
             body: JSON.stringify({
                 content: content,
@@ -243,10 +262,12 @@ document.querySelectorAll('.reaction-btn').forEach(btn => {
         const reactionType = this.dataset.reactionType;
         
         try {
+            const csrfToken = getCookie('csrftoken');
             const response = await fetch(`/api/post/${postId}/reaction/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
                 },
                 body: JSON.stringify({
                     reaction_type: reactionType,
@@ -286,10 +307,12 @@ document.querySelectorAll('.comment-reaction-btn').forEach(btn => {
         const reactionType = this.dataset.reactionType;
         
         try {
+            const csrfToken = getCookie('csrftoken');
             const response = await fetch(`/api/comment/${commentId}/reaction/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
                 },
                 body: JSON.stringify({
                     reaction_type: reactionType,

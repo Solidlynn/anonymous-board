@@ -5,6 +5,8 @@ from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.db.models import Q
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 import json
 import uuid
 from .models import Post, Comment, PostReaction, CommentReaction
@@ -78,6 +80,22 @@ def create_post(request):
             author_nickname=author_nickname or '익명'
         )
         
+        # WebSocket으로 새 게시글 알림 전송
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'board_board_updates',
+            {
+                'type': 'broadcast_update',
+                'update_type': 'new_post',
+                'message': '새로운 게시글이 작성되었습니다.',
+                'data': {
+                    'post_id': str(post.id),
+                    'title': post.title,
+                    'author': post.author_nickname
+                }
+            }
+        )
+        
         return JsonResponse({
             'success': True, 
             'post_id': str(post.id),
@@ -110,6 +128,23 @@ def create_comment(request, post_id):
             post=post,
             content=content,
             author_nickname=author_nickname or '익명'
+        )
+        
+        # WebSocket으로 새 댓글 알림 전송
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            'board_board_updates',
+            {
+                'type': 'broadcast_update',
+                'update_type': 'new_comment',
+                'message': '새로운 댓글이 작성되었습니다.',
+                'data': {
+                    'comment_id': str(comment.id),
+                    'post_id': str(post.id),
+                    'post_title': post.title,
+                    'author': comment.author_nickname
+                }
+            }
         )
         
         return JsonResponse({

@@ -39,6 +39,8 @@ function initializeWebSocket() {
         websocket.onopen = function(event) {
             console.log('WebSocket 연결됨');
             updateConnectionStatus(true);
+            // 연결 성공 시 하트비트 시작
+            startHeartbeat();
         };
         
         websocket.onmessage = function(event) {
@@ -49,8 +51,9 @@ function initializeWebSocket() {
         websocket.onclose = function(event) {
             console.log('WebSocket 연결 끊어짐');
             updateConnectionStatus(false);
-            // 5초 후 재연결 시도
-            setTimeout(initializeWebSocket, 5000);
+            stopHeartbeat();
+            // 3초 후 재연결 시도
+            setTimeout(initializeWebSocket, 3000);
         };
         
         websocket.onerror = function(error) {
@@ -60,6 +63,30 @@ function initializeWebSocket() {
     } catch (error) {
         console.error('WebSocket 연결 실패:', error);
         updateConnectionStatus(false);
+        // 5초 후 재시도
+        setTimeout(initializeWebSocket, 5000);
+    }
+}
+
+// 하트비트 관리
+let heartbeatInterval = null;
+
+function startHeartbeat() {
+    stopHeartbeat();
+    heartbeatInterval = setInterval(() => {
+        if (websocket && websocket.readyState === WebSocket.OPEN) {
+            websocket.send(JSON.stringify({type: 'ping'}));
+        } else {
+            // 연결이 끊어진 경우 재연결 시도
+            initializeWebSocket();
+        }
+    }, 30000); // 30초마다 하트비트
+}
+
+function stopHeartbeat() {
+    if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
     }
 }
 

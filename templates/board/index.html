@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}사내 익명 게시판 - 메인{% endblock %}
+{% block title %}랩포 익명 게시판 - 메인{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -169,6 +169,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="writePostForm">
+                {% csrf_token %}
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="postTitle" class="form-label">제목</label>
@@ -228,11 +229,29 @@ function generateUUID() {
     });
 }
 
+// CSRF 토큰 가져오기
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 // 게시글 작성 폼 처리
 document.getElementById('writePostForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
+    const csrfToken = getCookie('csrftoken');
+    
     const data = {
         title: formData.get('title'),
         content: formData.get('content'),
@@ -244,6 +263,7 @@ document.getElementById('writePostForm').addEventListener('submit', async functi
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
             },
             body: JSON.stringify(data)
         });
@@ -270,10 +290,12 @@ document.querySelectorAll('.reaction-btn').forEach(btn => {
         const reactionType = this.dataset.reactionType;
         
         try {
+            const csrfToken = getCookie('csrftoken');
             const response = await fetch(`/api/post/${postId}/reaction/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
                 },
                 body: JSON.stringify({
                     reaction_type: reactionType,
