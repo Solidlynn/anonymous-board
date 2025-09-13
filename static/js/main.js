@@ -445,14 +445,22 @@ const utils = {
         if (button) {
             button.disabled = true; // 중복 클릭 방지
             
-            // 현재 상태 토글
+            // 현재 상태 확인 및 카운트 요소 찾기
             const isActive = button.classList.contains('btn-primary');
+            const countElement = button.querySelector('.reaction-count');
+            let currentCount = parseInt(countElement.textContent) || 0;
+            
+            // 버튼 상태 토글 및 카운트 즉시 업데이트
             if (isActive) {
                 button.classList.remove('btn-primary');
                 button.classList.add('btn-outline-primary');
+                // 활성 상태에서 비활성으로: 카운트 감소
+                countElement.textContent = Math.max(0, currentCount - 1);
             } else {
                 button.classList.remove('btn-outline-primary');
                 button.classList.add('btn-primary');
+                // 비활성 상태에서 활성으로: 카운트 증가
+                countElement.textContent = currentCount + 1;
             }
         }
         
@@ -500,12 +508,17 @@ const utils = {
                         // 에러 시 원래 상태로 복원
                         if (button) {
                             const isActive = button.classList.contains('btn-primary');
+                            const countElement = button.querySelector('.reaction-count');
+                            let currentCount = parseInt(countElement.textContent) || 0;
+                            
                             if (isActive) {
                                 button.classList.remove('btn-primary');
                                 button.classList.add('btn-outline-primary');
+                                countElement.textContent = Math.max(0, currentCount - 1);
                             } else {
                                 button.classList.remove('btn-outline-primary');
                                 button.classList.add('btn-primary');
+                                countElement.textContent = currentCount + 1;
                             }
                         }
                     }
@@ -515,12 +528,17 @@ const utils = {
                 // 에러 시 원래 상태로 복원
                 if (button) {
                     const isActive = button.classList.contains('btn-primary');
+                    const countElement = button.querySelector('.reaction-count');
+                    let currentCount = parseInt(countElement.textContent) || 0;
+                    
                     if (isActive) {
                         button.classList.remove('btn-primary');
                         button.classList.add('btn-outline-primary');
+                        countElement.textContent = Math.max(0, currentCount - 1);
                     } else {
                         button.classList.remove('btn-outline-primary');
                         button.classList.add('btn-primary');
+                        countElement.textContent = currentCount + 1;
                     }
                 }
             } finally {
