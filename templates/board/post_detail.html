@@ -33,13 +33,39 @@
                 
                 <!-- 게시글 반응 -->
                 <div class="post-reactions mb-3">
-                    <button class="btn btn-outline-success reaction-btn" 
-                            data-post-id="{{ post.id }}" 
-                            data-reaction-type="like"
-                            title="좋아요">
-                        <i class="fas fa-thumbs-up"></i> 좋아요 {{ post.likes_count }}
-                    </button>
-                    <button class="btn btn-outline-danger ms-2 delete-post-btn" 
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
+                                data-post-id="{{ post.id }}" 
+                                data-reaction-type="like"
+                                title="좋아요">
+                            👍 <span class="reaction-count">{{ post.likes_count }}</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger reaction-btn emoji-reaction" 
+                                data-post-id="{{ post.id }}" 
+                                data-reaction-type="heart"
+                                title="하트">
+                            ❤️ <span class="reaction-count">{{ post.hearts_count }}</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning reaction-btn emoji-reaction" 
+                                data-post-id="{{ post.id }}" 
+                                data-reaction-type="laugh"
+                                title="웃음">
+                            😂 <span class="reaction-count">{{ post.laughs_count }}</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-info reaction-btn emoji-reaction" 
+                                data-post-id="{{ post.id }}" 
+                                data-reaction-type="wow"
+                                title="놀람">
+                            😮 <span class="reaction-count">{{ post.wows_count }}</span>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary reaction-btn emoji-reaction" 
+                                data-post-id="{{ post.id }}" 
+                                data-reaction-type="sad"
+                                title="슬픔">
+                            😢 <span class="reaction-count">{{ post.sads_count }}</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-outline-danger delete-post-btn" 
                             data-post-id="{{ post.id }}" 
                             title="게시글 삭제">
                         <i class="fas fa-trash"></i> 삭제
@@ -51,105 +77,118 @@
         <!-- 댓글 섹션 -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-comments me-2"></i>댓글 ({{ comments.count }})
-                </h5>
+                <h5 class="mb-0">댓글 {{ comments|length }}개</h5>
             </div>
             <div class="card-body">
                 <!-- 댓글 작성 폼 -->
                 <form id="commentForm" class="mb-4">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <textarea class="form-control" id="commentContent" name="content" rows="3" 
-                                  placeholder="댓글을 입력하세요" required></textarea>
-                    </div>
-                    <div class="row">
+                    <div class="row mb-3">
                         <div class="col-md-8">
-                            <input type="text" class="form-control" id="commentAuthor" name="author_nickname" 
-                                   placeholder="닉네임 (선택사항)" maxlength="50">
+                            <textarea class="form-control" id="commentContent" rows="3" placeholder="댓글을 입력하세요..." required></textarea>
                         </div>
                         <div class="col-md-4">
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-paper-plane me-1"></i>댓글 작성
-                            </button>
+                            <input type="text" class="form-control mb-2" id="commentAuthor" placeholder="닉네임 (선택사항)">
+                            <button type="submit" class="btn btn-primary w-100">댓글 작성</button>
                         </div>
                     </div>
                 </form>
-
+                
                 <!-- 댓글 목록 -->
-                <div id="commentsContainer">
+                <div class="comments-list">
                     {% for comment in comments %}
-                    <div class="comment-item mb-3 p-3 border rounded" data-comment-id="{{ comment.id }}">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div class="comment-meta">
-                                <strong class="text-primary">
-                                    <i class="fas fa-user-secret me-1"></i>{{ comment.author_nickname }}
-                                </strong>
-                                <small class="text-muted ms-2">
-                                    <i class="fas fa-clock me-1"></i>{{ comment.created_at|date:"m/d H:i" }}
-                                </small>
+                    <div class="comment-item border-bottom pb-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="comment-content flex-grow-1">
+                                <div class="comment-meta mb-2">
+                                    <strong class="text-primary">{{ comment.author_nickname }}</strong>
+                                    <small class="text-muted ms-2">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                                </div>
+                                <p class="mb-2">{{ comment.content|linebreaks }}</p>
+                                
+                                <!-- 댓글 반응 -->
+                                <div class="comment-reactions">
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
+                                                data-comment-id="{{ comment.id }}" 
+                                                data-reaction-type="like"
+                                                title="좋아요">
+                                            👍 <span class="reaction-count">{{ comment.likes_count }}</span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger reaction-btn emoji-reaction" 
+                                                data-comment-id="{{ comment.id }}" 
+                                                data-reaction-type="heart"
+                                                title="하트">
+                                            ❤️ <span class="reaction-count">0</span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning reaction-btn emoji-reaction" 
+                                                data-comment-id="{{ comment.id }}" 
+                                                data-reaction-type="laugh"
+                                                title="웃음">
+                                            😂 <span class="reaction-count">0</span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info reaction-btn emoji-reaction" 
+                                                data-comment-id="{{ comment.id }}" 
+                                                data-reaction-type="wow"
+                                                title="놀람">
+                                            😮 <span class="reaction-count">0</span>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary reaction-btn emoji-reaction" 
+                                                data-comment-id="{{ comment.id }}" 
+                                                data-reaction-type="sad"
+                                                title="슬픔">
+                                            😢 <span class="reaction-count">0</span>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="comment-content mb-2">
-                            {{ comment.content|linebreaks }}
-                        </div>
-                        
-                        <div class="comment-reactions">
-                            <button class="btn btn-sm btn-outline-success comment-reaction-btn" 
-                                    data-comment-id="{{ comment.id }}" 
-                                    data-reaction-type="like"
-                                    title="좋아요">
-                                <i class="fas fa-thumbs-up"></i> {{ comment.likes_count }}
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger comment-reaction-btn ms-1" 
-                                    data-comment-id="{{ comment.id }}" 
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-comment-slash fa-2x text-muted mb-2"></i>
-                        <p class="text-muted mb-0">아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!</p>
-                    </div>
+                    <p class="text-muted text-center">첫 번째 댓글을 작성해보세요!</p>
                     {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-
+    
+    <!-- 사이드바 - 고정 위치 -->
     <div class="col-lg-4">
-        <!-- 사이드바 -->
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h6 class="mb-0">
-                    <i class="fas fa-info-circle me-2"></i>게시글 정보
-                </h6>
-            </div>
-            <div class="card-body">
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-2">
-                        <i class="fas fa-calendar text-primary me-2"></i>
+        <div class="position-sticky" style="top: 20px;">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">게시글 정보</h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-item mb-3">
+                        <i class="fas fa-user-secret text-primary me-2"></i>
+                        <strong>작성자:</strong> {{ post.author_nickname }}
+                    </div>
+                    <div class="info-item mb-3">
+                        <i class="fas fa-calendar text-success me-2"></i>
                         <strong>작성일:</strong> {{ post.created_at|date:"Y년 m월 d일" }}
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-clock text-primary me-2"></i>
-                        <strong>작성시간:</strong> {{ post.created_at|date:"H:i" }}
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-eye text-primary me-2"></i>
+                    </div>
+                    <div class="info-item mb-3">
+                        <i class="fas fa-clock text-info me-2"></i>
+                        <strong>시간:</strong> {{ post.created_at|date:"H:i" }}
+                    </div>
+                    <div class="info-item mb-3">
+                        <i class="fas fa-eye text-warning me-2"></i>
                         <strong>조회수:</strong> {{ post.view_count }}
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-comments text-primary me-2"></i>
-                        <strong>댓글수:</strong> {{ comments.count }}
-                    </li>
-                    <li>
-                        <i class="fas fa-heart text-primary me-2"></i>
-                        <strong>반응:</strong> 좋아요 {{ post.likes_count }}
-                    </li>
-                </ul>
+                    </div>
+                    <div class="info-item mb-3">
+                        <i class="fas fa-comments text-secondary me-2"></i>
+                        <strong>댓글:</strong> {{ comments|length }}개
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-thumbs-up text-primary me-2"></i>
+                        <strong>좋아요:</strong> {{ post.likes_count }}
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+</div>
 
         <!-- 실시간 업데이트 알림 -->
         <div class="card mt-3" id="realtime-status">
@@ -223,6 +262,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // 이모지 반응 이벤트 리스너
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.emoji-reaction')) {
+            e.preventDefault();
+            const btn = e.target.closest('.emoji-reaction');
+            const postId = btn.dataset.postId;
+            const commentId = btn.dataset.commentId;
+            const reactionType = btn.dataset.reactionType;
+            
+            if (postId) {
+                utils.toggleEmojiReaction('post', postId, reactionType);
+            } else if (commentId) {
+                utils.toggleEmojiReaction('comment', commentId, reactionType);
+            }
+        }
+    });
 });
 </script>
 {% endblock %}

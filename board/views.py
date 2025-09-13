@@ -399,3 +399,147 @@ def delete_post(request, post_id):
 def health_check(request):
     """Railway healthcheck 엔드포인트"""
     return HttpResponse("OK", status=200)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def toggle_post_reaction(request, post_id):
+    """게시글 이모지 반응 토글"""
+    try:
+        data = json.loads(request.body)
+        reaction_type = data.get('reaction_type')
+        
+        if reaction_type not in ['like', 'heart', 'laugh', 'wow', 'sad']:
+            return JsonResponse({'success': False, 'error': '유효하지 않은 반응 타입입니다.'})
+        
+        post = get_object_or_404(Post, id=post_id)
+        session_id = request.session.session_key
+        
+        if not session_id:
+            request.session.create()
+            session_id = request.session.session_key
+        
+        # 기존 반응 확인
+        existing_reaction = PostReaction.objects.filter(
+            post=post, 
+            session_id=session_id
+        ).first()
+        
+        if existing_reaction:
+            if existing_reaction.reaction_type == reaction_type:
+                # 같은 반응이면 제거
+                existing_reaction.delete()
+                is_active = False
+            else:
+                # 다른 반응이면 변경
+                existing_reaction.reaction_type = reaction_type
+                existing_reaction.save()
+                is_active = True
+        else:
+            # 새 반응 생성
+            PostReaction.objects.create(
+                post=post,
+                session_id=session_id,
+                reaction_type=reaction_type
+            )
+            is_active = True
+        
+        # 카운트 업데이트
+        update_post_reaction_counts(post)
+        
+        # 현재 카운트 반환
+        count = getattr(post, f'{reaction_type}s_count', 0)
+        
+        return JsonResponse({
+            'success': True,
+            'count': count,
+            'is_active': is_active
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def toggle_comment_reaction(request, comment_id):
+    """댓글 이모지 반응 토글"""
+    try:
+        data = json.loads(request.body)
+        reaction_type = data.get('reaction_type')
+        
+        if reaction_type not in ['like', 'heart', 'laugh', 'wow', 'sad']:
+            return JsonResponse({'success': False, 'error': '유효하지 않은 반응 타입입니다.'})
+        
+        comment = get_object_or_404(Comment, id=comment_id)
+        session_id = request.session.session_key
+        
+        if not session_id:
+            request.session.create()
+            session_id = request.session.session_key
+        
+        # 기존 반응 확인
+        existing_reaction = CommentReaction.objects.filter(
+            comment=comment, 
+            session_id=session_id
+        ).first()
+        
+        if existing_reaction:
+            if existing_reaction.reaction_type == reaction_type:
+                # 같은 반응이면 제거
+                existing_reaction.delete()
+                is_active = False
+            else:
+                # 다른 반응이면 변경
+                existing_reaction.reaction_type = reaction_type
+                existing_reaction.save()
+                is_active = True
+        else:
+            # 새 반응 생성
+            CommentReaction.objects.create(
+                comment=comment,
+                session_id=session_id,
+                reaction_type=reaction_type
+            )
+            is_active = True
+        
+        # 카운트 업데이트
+        update_comment_reaction_counts(comment)
+        
+        # 현재 카운트 반환
+        count = getattr(comment, f'{reaction_type}s_count', 0)
+        
+        return JsonResponse({
+            'success': True,
+            'count': count,
+            'is_active': is_active
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+def update_post_reaction_counts(post):
+    """게시글 반응 카운트 업데이트"""
+    reactions = PostReaction.objects.filter(post=post)
+    
+    post.likes_count = reactions.filter(reaction_type='like').count()
+    post.hearts_count = reactions.filter(reaction_type='heart').count()
+    post.laughs_count = reactions.filter(reaction_type='laugh').count()
+    post.wows_count = reactions.filter(reaction_type='wow').count()
+    post.sads_count = reactions.filter(reaction_type='sad').count()
+    
+    post.save()
+
+
+def update_comment_reaction_counts(comment):
+    """댓글 반응 카운트 업데이트"""
+    reactions = CommentReaction.objects.filter(comment=comment)
+    
+    comment.likes_count = reactions.filter(reaction_type='like').count()
+    comment.hearts_count = reactions.filter(reaction_type='heart').count()
+    comment.laughs_count = reactions.filter(reaction_type='laugh').count()
+    comment.wows_count = reactions.filter(reaction_type='wow').count()
+    comment.sads_count = reactions.filter(reaction_type='sad').count()
+    
+    comment.save()

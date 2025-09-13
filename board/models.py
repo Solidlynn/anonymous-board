@@ -14,9 +14,12 @@ class Post(models.Model):
     view_count = models.PositiveIntegerField(default=0, verbose_name='조회수')
     is_anonymous = models.BooleanField(default=True, verbose_name='익명여부')
     
-    # 좋아요/싫어요 관련
+    # 이모지 반응 관련
     likes_count = models.PositiveIntegerField(default=0, verbose_name='좋아요 수')
-    dislikes_count = models.PositiveIntegerField(default=0, verbose_name='싫어요 수')
+    hearts_count = models.PositiveIntegerField(default=0, verbose_name='하트 수')
+    laughs_count = models.PositiveIntegerField(default=0, verbose_name='웃음 수')
+    wows_count = models.PositiveIntegerField(default=0, verbose_name='놀람 수')
+    sads_count = models.PositiveIntegerField(default=0, verbose_name='슬픔 수')
     
     # 삭제 관련
     is_deleted = models.BooleanField(default=False, verbose_name='삭제 여부')
@@ -50,9 +53,12 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name='수정일')
     is_anonymous = models.BooleanField(default=True, verbose_name='익명여부')
     
-    # 좋아요/싫어요 관련
+    # 이모지 반응 관련
     likes_count = models.PositiveIntegerField(default=0, verbose_name='좋아요 수')
-    dislikes_count = models.PositiveIntegerField(default=0, verbose_name='싫어요 수')
+    hearts_count = models.PositiveIntegerField(default=0, verbose_name='하트 수')
+    laughs_count = models.PositiveIntegerField(default=0, verbose_name='웃음 수')
+    wows_count = models.PositiveIntegerField(default=0, verbose_name='놀람 수')
+    sads_count = models.PositiveIntegerField(default=0, verbose_name='슬픔 수')
     
     class Meta:
         ordering = ['created_at']
@@ -64,10 +70,13 @@ class Comment(models.Model):
 
 
 class PostReaction(models.Model):
-    """게시글 반응 모델 (좋아요/싫어요)"""
+    """게시글 반응 모델 (다양한 이모지 반응)"""
     REACTION_CHOICES = [
         ('like', '좋아요'),
-        ('dislike', '싫어요'),
+        ('heart', '하트'),
+        ('laugh', '웃음'),
+        ('wow', '놀람'),
+        ('sad', '슬픔'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -83,10 +92,13 @@ class PostReaction(models.Model):
 
 
 class CommentReaction(models.Model):
-    """댓글 반응 모델 (좋아요/싫어요)"""
+    """댓글 반응 모델 (다양한 이모지 반응)"""
     REACTION_CHOICES = [
         ('like', '좋아요'),
-        ('dislike', '싫어요'),
+        ('heart', '하트'),
+        ('laugh', '웃음'),
+        ('wow', '놀람'),
+        ('sad', '슬픔'),
     ]
     
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

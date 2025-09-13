@@ -397,30 +397,90 @@ const utils = {
     // 게시글 삭제 기능
     deletePost: async function(postId) {
         try {
-            // 삭제 확인
-            if (!confirm('정말로 이 게시글을 삭제하시겠습니까?\n삭제된 게시글은 복구할 수 없습니다.')) {
+            if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
                 return;
             }
-            
+
+            const csrfToken = getCookie('csrftoken');
             const response = await fetch(`/api/post/${postId}/delete/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
                 }
             });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('게시글이 삭제되었습니다.');
+                window.location.href = '/';
+            } else {
+                alert(result.error || '게시글 삭제에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('네트워크 오류가 발생했습니다.');
+        }
+    },
+
+    // 이모지 반응 토글 기능
+    toggleEmojiReaction: async function(targetType, targetId, reactionType) {
+        try {
+            const csrfToken = getCookie('csrftoken');
+            const url = targetType === 'post' 
+                ? `/api/post/${targetId}/reaction/` 
+                : `/api/comment/${targetId}/reaction/`;
             
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    reaction_type: reactionType
+                })
+            });
+
             const result = await response.json();
             
             if (result.success) {
-                alert('게시글이 삭제되었습니다.');
-                location.reload(); // 페이지 새로고침
-            } else {
-                alert('삭제 실패: ' + result.error);
+                // 해당 버튼의 카운트 업데이트
+                const selector = targetType === 'post' 
+                    ? `[data-post-id="${targetId}"][data-reaction-type="${reactionType}"] .reaction-count`
+                    : `[data-comment-id="${targetId}"][data-reaction-type="${reactionType}"] .reaction-count`;
+                
+                const countElement = document.querySelector(selector);
+                if (countElement) {
+                    countElement.textContent = result.count;
+                }
+                
+                // 버튼 스타일 업데이트 (활성/비활성)
+                const button = document.querySelector(
+                    targetType === 'post' 
+                        ? `[data-post-id="${targetId}"][data-reaction-type="${reactionType}"]`
+                        : `[data-comment-id="${targetId}"][data-reaction-type="${reactionType}"]`
+                );
+                
+                if (button) {
+                    if (result.is_active) {
+                        button.classList.remove('btn-outline-primary', 'btn-outline-danger', 'btn-outline-warning', 'btn-outline-info', 'btn-outline-secondary');
+                        button.classList.add('btn-primary', 'btn-danger', 'btn-warning', 'btn-info', 'btn-secondary'.split(' ').find(cls => 
+                            button.classList.contains(cls.replace('btn-', 'btn-outline-'))
+                        ) || 'btn-primary');
+                    } else {
+                        button.classList.remove('btn-primary', 'btn-danger', 'btn-warning', 'btn-info', 'btn-secondary');
+                        const outlineClass = reactionType === 'like' ? 'btn-outline-primary' :
+                                           reactionType === 'heart' ? 'btn-outline-danger' :
+                                           reactionType === 'laugh' ? 'btn-outline-warning' :
+                                           reactionType === 'wow' ? 'btn-outline-info' : 'btn-outline-secondary';
+                        button.classList.add(outlineClass);
+                    }
+                }
             }
-            
         } catch (error) {
-            console.error('게시글 삭제 오류:', error);
-            alert('게시글 삭제 중 오류가 발생했습니다.');
+            console.error('Reaction error:', error);
         }
     }
 };

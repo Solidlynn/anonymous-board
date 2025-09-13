@@ -4,7 +4,7 @@ from .models import Post, Comment, PostReaction, CommentReaction
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author_nickname', 'created_at', 'view_count', 'likes_count', 'dislikes_count')
+    list_display = ('title', 'author_nickname', 'created_at', 'view_count', 'likes_count', 'hearts_count')
     list_filter = ('created_at', 'is_anonymous')
     search_fields = ('title', 'content', 'author_nickname')
     readonly_fields = ('id', 'created_at', 'updated_at', 'view_count')
@@ -13,7 +13,7 @@ class PostAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('post', 'author_nickname', 'created_at', 'likes_count', 'dislikes_count')
+    list_display = ('post', 'author_nickname', 'created_at', 'likes_count', 'hearts_count')
     list_filter = ('created_at', 'is_anonymous')
     search_fields = ('content', 'author_nickname')
     readonly_fields = ('id', 'created_at', 'updated_at')
