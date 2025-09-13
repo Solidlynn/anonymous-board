@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}사내 익명 게시판 - 메인{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 헤더 섹션 -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 text-primary">
+                <i class="fas fa-list-alt me-2"></i>게시글 목록
+            </h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#writePostModal">
+                <i class="fas fa-pen me-1"></i>글쓰기
+            </button>
+        </div>
+
+        <!-- 검색 섹션 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" 
+                           placeholder="제목, 내용, 닉네임으로 검색..." 
+                           value="{{ search_query }}">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 게시글 목록 -->
+        <div class="posts-container">
+            {% for post in page_obj %}
+            <div class="card post-card mb-3" data-post-id="{{ post.id }}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">
+                            <a href="{% url 'board:post_detail' post.id %}" class="text-decoration-none">
+                                {{ post.title }}
+                            </a>
+                        </h5>
+                        <span class="badge bg-secondary">{{ post.view_count }} 조회</span>
+                    </div>
+                    
+                    <p class="card-text text-muted mb-3">{{ post.content|truncatewords:30 }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="post-meta">
+                            <small class="text-muted">
+                                <i class="fas fa-user-secret me-1"></i>{{ post.author_nickname }}
+                                <i class="fas fa-clock ms-3 me-1"></i>{{ post.created_at|date:"Y-m-d H:i" }}
+                            </small>
+                        </div>
+                        
+                        <div class="post-reactions">
+                            <button class="btn btn-sm btn-outline-success reaction-btn" 
+                                    data-post-id="{{ post.id }}" 
+                                    data-reaction-type="like"
+                                    title="좋아요">
+                                <i class="fas fa-thumbs-up"></i> {{ post.likes_count }}
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger reaction-btn ms-1" 
+                                    data-post-id="{{ post.id }}" 
+                                    data-reaction-type="dislike"
+                                    title="싫어요">
+                                <i class="fas fa-thumbs-down"></i> {{ post.dislikes_count }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">아직 게시글이 없습니다.</h5>
+                <p class="text-muted">첫 번째 게시글을 작성해보세요!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 페이지네이션 -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">처음</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">이전</a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">다음</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">마지막</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 사이드바 -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>게시판 안내
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-user-secret text-primary me-2"></i>
+                        <strong>익명성 보장:</strong> 닉네임으로 자유롭게 소통하세요
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-heart text-danger me-2"></i>
+                        <strong>건전한 소통:</strong> 서로를 존중하는 문화를 만들어가요
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-comments text-success me-2"></i>
+                        <strong>자유로운 토론:</strong> 다양한 의견을 나눠보세요
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt text-warning me-2"></i>
+                        <strong>안전한 공간:</strong> 개인정보는 보호됩니다
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 실시간 업데이트 알림 -->
+        <div class="card mt-3" id="realtime-status">
+            <div class="card-body text-center">
+                <i class="fas fa-wifi text-success me-2"></i>
+                <span class="text-muted">실시간 업데이트 연결됨</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 글쓰기 모달 -->
+<div class="modal fade" id="writePostModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-pen me-2"></i>새 게시글 작성
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="writePostForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="postTitle" class="form-label">제목</label>
+                        <input type="text" class="form-control" id="postTitle" name="title" 
+                               placeholder="게시글 제목을 입력하세요" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="postAuthor" class="form-label">닉네임</label>
+                        <input type="text" class="form-control" id="postAuthor" name="author_nickname" 
+                               placeholder="익명 (기본값)" maxlength="50">
+                    </div>
+                    <div class="mb-3">
+                        <label for="postContent" class="form-label">내용</label>
+                        <textarea class="form-control" id="postContent" name="content" rows="8" 
+                                  placeholder="게시글 내용을 입력하세요" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i>게시글 작성
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 토스트 알림 -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="notificationToast" class="toast" role="alert">
+        <div class="toast-header">
+            <i class="fas fa-bell text-primary me-2"></i>
+            <strong class="me-auto">알림</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="notificationMessage">
+            메시지가 여기에 표시됩니다.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 세션 ID 생성 (익명 사용자 식별용)
+let sessionId = localStorage.getItem('sessionId') || generateUUID();
+if (!localStorage.getItem('sessionId')) {
+    localStorage.setItem('sessionId', sessionId);
+}
+
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// 게시글 작성 폼 처리
+document.getElementById('writePostForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        title: formData.get('title'),
+        content: formData.get('content'),
+        author_nickname: formData.get('author_nickname') || '익명'
+    };
+    
+    try {
+        const response = await fetch('/api/post/create/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('게시글이 작성되었습니다!', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('writePostModal')).hide();
+            this.reset();
+            location.reload(); // 페이지 새로고침으로 새 게시글 표시
+        } else {
+            showNotification(result.error || '게시글 작성에 실패했습니다.', 'error');
+        }
+    } catch (error) {
+        showNotification('네트워크 오류가 발생했습니다.', 'error');
+    }
+});
+
+// 반응 버튼 처리
+document.querySelectorAll('.reaction-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const postId = this.dataset.postId;
+        const reactionType = this.dataset.reactionType;
+        
+        try {
+            const response = await fetch(`/api/post/${postId}/reaction/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    reaction_type: reactionType,
+                    session_id: sessionId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 해당 게시글의 반응 버튼 업데이트
+                const postCard = document.querySelector(`[data-post-id="${postId}"]`);
+                const likeBtn = postCard.querySelector('[data-reaction-type="like"]');
+                const dislikeBtn = postCard.querySelector('[data-reaction-type="dislike"]');
+                
+                likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${result.likes_count}`;
+                dislikeBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${result.dislikes_count}`;
+                
+                // 버튼 상태 업데이트 (시각적 피드백)
+                if (reactionType === 'like') {
+                    likeBtn.classList.toggle('btn-success', result.action === 'added');
+                    likeBtn.classList.toggle('btn-outline-success', result.action !== 'added');
+                } else {
+                    dislikeBtn.classList.toggle('btn-danger', result.action === 'added');
+                    dislikeBtn.classList.toggle('btn-outline-danger', result.action !== 'added');
+                }
+            }
+        } catch (error) {
+            showNotification('반응 처리 중 오류가 발생했습니다.', 'error');
+        }
+    });
+});
+
+// 알림 표시 함수
+function showNotification(message, type = 'info') {
+    const toast = document.getElementById('notificationToast');
+    const messageEl = document.getElementById('notificationMessage');
+    
+    messageEl.textContent = message;
+    
+    // 타입에 따른 아이콘 변경
+    const icon = toast.querySelector('i');
+    icon.className = type === 'success' ? 'fas fa-check-circle text-success me-2' :
+                    type === 'error' ? 'fas fa-exclamation-circle text-danger me-2' :
+                    'fas fa-info-circle text-primary me-2';
+    
+    const toastInstance = new bootstrap.Toast(toast);
+    toastInstance.show();
+}
+</script>
+{% endblock %}

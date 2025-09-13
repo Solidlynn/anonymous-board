@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} - 사내 익명 게시판{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 게시글 내용 -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h1 class="h3 mb-0">{{ post.title }}</h1>
+                    <a href="{% url 'board:index' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>목록으로
+                    </a>
+                </div>
+                
+                <div class="post-meta mb-4">
+                    <div class="d-flex align-items-center text-muted">
+                        <i class="fas fa-user-secret me-2"></i>
+                        <span class="me-3">{{ post.author_nickname }}</span>
+                        <i class="fas fa-clock me-2"></i>
+                        <span class="me-3">{{ post.created_at|date:"Y년 m월 d일 H:i" }}</span>
+                        <i class="fas fa-eye me-2"></i>
+                        <span>{{ post.view_count }} 조회</span>
+                    </div>
+                </div>
+                
+                <div class="post-content mb-4">
+                    {{ post.content|linebreaks }}
+                </div>
+                
+                <!-- 게시글 반응 -->
+                <div class="post-reactions mb-3">
+                    <button class="btn btn-outline-success reaction-btn" 
+                            data-post-id="{{ post.id }}" 
+                            data-reaction-type="like"
+                            title="좋아요">
+                        <i class="fas fa-thumbs-up"></i> 좋아요 {{ post.likes_count }}
+                    </button>
+                    <button class="btn btn-outline-danger reaction-btn ms-2" 
+                            data-post-id="{{ post.id }}" 
+                            data-reaction-type="dislike"
+                            title="싫어요">
+                        <i class="fas fa-thumbs-down"></i> 싫어요 {{ post.dislikes_count }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 댓글 섹션 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>댓글 ({{ comments.count }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- 댓글 작성 폼 -->
+                <form id="commentForm" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <textarea class="form-control" id="commentContent" name="content" rows="3" 
+                                      placeholder="댓글을 입력하세요" required></textarea>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-2">
+                                <input type="text" class="form-control" id="commentAuthor" name="author_nickname" 
+                                       placeholder="닉네임 (선택사항)" maxlength="50">
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-paper-plane me-1"></i>댓글 작성
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- 댓글 목록 -->
+                <div id="commentsContainer">
+                    {% for comment in comments %}
+                    <div class="comment-item mb-3 p-3 border rounded" data-comment-id="{{ comment.id }}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="comment-meta">
+                                <strong class="text-primary">
+                                    <i class="fas fa-user-secret me-1"></i>{{ comment.author_nickname }}
+                                </strong>
+                                <small class="text-muted ms-2">
+                                    <i class="fas fa-clock me-1"></i>{{ comment.created_at|date:"m/d H:i" }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="comment-content mb-2">
+                            {{ comment.content|linebreaks }}
+                        </div>
+                        
+                        <div class="comment-reactions">
+                            <button class="btn btn-sm btn-outline-success comment-reaction-btn" 
+                                    data-comment-id="{{ comment.id }}" 
+                                    data-reaction-type="like"
+                                    title="좋아요">
+                                <i class="fas fa-thumbs-up"></i> {{ comment.likes_count }}
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger comment-reaction-btn ms-1" 
+                                    data-comment-id="{{ comment.id }}" 
+                                    data-reaction-type="dislike"
+                                    title="싫어요">
+                                <i class="fas fa-thumbs-down"></i> {{ comment.dislikes_count }}
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">아직 댓글이 없습니다. 첫 번째 댓글을 작성해보세요!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 사이드바 -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>게시글 정보
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-calendar text-primary me-2"></i>
+                        <strong>작성일:</strong> {{ post.created_at|date:"Y년 m월 d일" }}
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        <strong>작성시간:</strong> {{ post.created_at|date:"H:i" }}
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-eye text-primary me-2"></i>
+                        <strong>조회수:</strong> {{ post.view_count }}
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-comments text-primary me-2"></i>
+                        <strong>댓글수:</strong> {{ comments.count }}
+                    </li>
+                    <li>
+                        <i class="fas fa-heart text-primary me-2"></i>
+                        <strong>반응:</strong> 좋아요 {{ post.likes_count }}, 싫어요 {{ post.dislikes_count }}
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 실시간 업데이트 알림 -->
+        <div class="card mt-3" id="realtime-status">
+            <div class="card-body text-center">
+                <i class="fas fa-wifi text-success me-2"></i>
+                <span class="text-muted">실시간 업데이트 연결됨</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 토스트 알림 -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="notificationToast" class="toast" role="alert">
+        <div class="toast-header">
+            <i class="fas fa-bell text-primary me-2"></i>
+            <strong class="me-auto">알림</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+        </div>
+        <div class="toast-body" id="notificationMessage">
+            메시지가 여기에 표시됩니다.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 세션 ID 생성 (익명 사용자 식별용)
+let sessionId = localStorage.getItem('sessionId') || generateUUID();
+if (!localStorage.getItem('sessionId')) {
+    localStorage.setItem('sessionId', sessionId);
+}
+
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// 댓글 작성 폼 처리
+document.getElementById('commentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const content = document.getElementById('commentContent').value.trim();
+    const author = document.getElementById('commentAuthor').value.trim() || '익명';
+    
+    if (!content) {
+        showNotification('댓글 내용을 입력해주세요.', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/post/{{ post.id }}/comment/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content: content,
+                author_nickname: author
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification('댓글이 작성되었습니다!', 'success');
+            document.getElementById('commentContent').value = '';
+            document.getElementById('commentAuthor').value = '';
+            // 페이지 새로고침으로 새 댓글 표시
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification(result.error || '댓글 작성에 실패했습니다.', 'error');
+        }
+    } catch (error) {
+        showNotification('네트워크 오류가 발생했습니다.', 'error');
+    }
+});
+
+// 게시글 반응 버튼 처리
+document.querySelectorAll('.reaction-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const postId = this.dataset.postId;
+        const reactionType = this.dataset.reactionType;
+        
+        try {
+            const response = await fetch(`/api/post/${postId}/reaction/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    reaction_type: reactionType,
+                    session_id: sessionId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 반응 버튼 업데이트
+                const likeBtn = document.querySelector(`[data-post-id="${postId}"][data-reaction-type="like"]`);
+                const dislikeBtn = document.querySelector(`[data-post-id="${postId}"][data-reaction-type="dislike"]`);
+                
+                likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> 좋아요 ${result.likes_count}`;
+                dislikeBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> 싫어요 ${result.dislikes_count}`;
+                
+                // 버튼 상태 업데이트
+                if (reactionType === 'like') {
+                    likeBtn.classList.toggle('btn-success', result.action === 'added');
+                    likeBtn.classList.toggle('btn-outline-success', result.action !== 'added');
+                } else {
+                    dislikeBtn.classList.toggle('btn-danger', result.action === 'added');
+                    dislikeBtn.classList.toggle('btn-outline-danger', result.action !== 'added');
+                }
+            }
+        } catch (error) {
+            showNotification('반응 처리 중 오류가 발생했습니다.', 'error');
+        }
+    });
+});
+
+// 댓글 반응 버튼 처리
+document.querySelectorAll('.comment-reaction-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const commentId = this.dataset.commentId;
+        const reactionType = this.dataset.reactionType;
+        
+        try {
+            const response = await fetch(`/api/comment/${commentId}/reaction/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    reaction_type: reactionType,
+                    session_id: sessionId
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 해당 댓글의 반응 버튼 업데이트
+                const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
+                const likeBtn = commentItem.querySelector('[data-reaction-type="like"]');
+                const dislikeBtn = commentItem.querySelector('[data-reaction-type="dislike"]');
+                
+                likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${result.likes_count}`;
+                dislikeBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${result.dislikes_count}`;
+                
+                // 버튼 상태 업데이트
+                if (reactionType === 'like') {
+                    likeBtn.classList.toggle('btn-success', result.action === 'added');
+                    likeBtn.classList.toggle('btn-outline-success', result.action !== 'added');
+                } else {
+                    dislikeBtn.classList.toggle('btn-danger', result.action === 'added');
+                    dislikeBtn.classList.toggle('btn-outline-danger', result.action !== 'added');
+                }
+            }
+        } catch (error) {
+            showNotification('반응 처리 중 오류가 발생했습니다.', 'error');
+        }
+    });
+});
+
+// 알림 표시 함수
+function showNotification(message, type = 'info') {
+    const toast = document.getElementById('notificationToast');
+    const messageEl = document.getElementById('notificationMessage');
+    
+    messageEl.textContent = message;
+    
+    // 타입에 따른 아이콘 변경
+    const icon = toast.querySelector('i');
+    icon.className = type === 'success' ? 'fas fa-check-circle text-success me-2' :
+                    type === 'error' ? 'fas fa-exclamation-circle text-danger me-2' :
+                    'fas fa-info-circle text-primary me-2';
+    
+    const toastInstance = new bootstrap.Toast(toast);
+    toastInstance.show();
+}
+</script>
+{% endblock %}
