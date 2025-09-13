@@ -10,7 +10,7 @@
         <div class="card mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h1 class="h3 mb-0">{{ post.title }}</h1>
+                    <h1 class="h3 mb-0 text-white">{{ post.title }}</h1>
                     <a href="{% url 'board:index' %}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-1"></i>목록으로
                     </a>
@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 
-                <div class="post-content mb-4">
+                <div class="post-content mb-4 text-white">
                     {{ post.content|linebreaks }}
                 </div>
                 
@@ -66,7 +66,7 @@
         <!-- 댓글 섹션 -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">댓글 {{ comments|length }}개</h5>
+                <h5 class="mb-0 text-white">댓글 {{ comments|length }}개</h5>
             </div>
             <div class="card-body">
                 <!-- 댓글 작성 폼 -->

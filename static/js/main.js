@@ -111,7 +111,7 @@ function handleUpdates(updates) {
 
 // 새 게시글 알림 처리
 function handleNewPostNotification(data) {
-    showNotification('새로운 게시글이 작성되었습니다!', 'info');
+    // showNotification('새로운 게시글이 작성되었습니다!', 'info');
     
     // 현재 페이지가 메인 페이지인 경우 새로고침
     if (window.location.pathname === '/' || window.location.pathname === '') {
