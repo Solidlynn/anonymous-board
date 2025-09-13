@@ -10,4 +10,5 @@ urlpatterns = [
     path('api/post/<uuid:post_id>/comment/', views.create_comment, name='create_comment'),
     path('api/post/<uuid:post_id>/reaction/', views.toggle_post_reaction, name='toggle_post_reaction'),
     path('api/comment/<uuid:comment_id>/reaction/', views.toggle_comment_reaction, name='toggle_comment_reaction'),
+    path('api/check-updates/', views.check_updates, name='check_updates'),
 ]

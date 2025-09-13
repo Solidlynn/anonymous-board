@@ -5,8 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
 from django.utils import timezone
 from django.db.models import Q
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from datetime import datetime, timedelta
 import json
 import uuid
 from .models import Post, Comment, PostReaction, CommentReaction
@@ -80,21 +79,8 @@ def create_post(request):
             author_nickname=author_nickname or '익명'
         )
         
-        # WebSocket으로 새 게시글 알림 전송
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            'board_board_updates',
-            {
-                'type': 'broadcast_update',
-                'update_type': 'new_post',
-                'message': '새로운 게시글이 작성되었습니다.',
-                'data': {
-                    'post_id': str(post.id),
-                    'title': post.title,
-                    'author': post.author_nickname
-                }
-            }
-        )
+        # 새 게시글 작성 시간 기록 (폴링용)
+        request.session['last_check_time'] = timezone.now().isoformat()
         
         return JsonResponse({
             'success': True, 
@@ -130,22 +116,8 @@ def create_comment(request, post_id):
             author_nickname=author_nickname or '익명'
         )
         
-        # WebSocket으로 새 댓글 알림 전송
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            'board_board_updates',
-            {
-                'type': 'broadcast_update',
-                'update_type': 'new_comment',
-                'message': '새로운 댓글이 작성되었습니다.',
-                'data': {
-                    'comment_id': str(comment.id),
-                    'post_id': str(post.id),
-                    'post_title': post.title,
-                    'author': comment.author_nickname
-                }
-            }
-        )
+        # 새 댓글 작성 시간 기록 (폴링용)
+        request.session['last_check_time'] = timezone.now().isoformat()
         
         return JsonResponse({
             'success': True,
@@ -333,3 +305,65 @@ def toggle_comment_reaction(request, comment_id):
         return JsonResponse({'success': False, 'error': '잘못된 데이터 형식입니다.'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': '반응 처리 중 오류가 발생했습니다.'})
+
+
+@require_http_methods(["GET"])
+def check_updates(request):
+    """업데이트 확인 API (폴링용)"""
+    try:
+        # 마지막 확인 시간 가져오기
+        last_check_str = request.session.get('last_check_time')
+        if not last_check_str:
+            request.session['last_check_time'] = timezone.now().isoformat()
+            return JsonResponse({'has_updates': False, 'updates': []})
+        
+        last_check_time = datetime.fromisoformat(last_check_str.replace('Z', '+00:00'))
+        current_time = timezone.now()
+        
+        # 최근 5분 내의 업데이트 확인
+        recent_posts = Post.objects.filter(
+            created_at__gte=last_check_time,
+            created_at__lt=current_time
+        ).values('id', 'title', 'author_nickname', 'created_at')
+        
+        recent_comments = Comment.objects.filter(
+            created_at__gte=last_check_time,
+            created_at__lt=current_time
+        ).values('id', 'post__title', 'author_nickname', 'created_at')
+        
+        updates = []
+        
+        # 새 게시글 알림
+        for post in recent_posts:
+            updates.append({
+                'type': 'new_post',
+                'data': {
+                    'post_id': str(post['id']),
+                    'title': post['title'],
+                    'author': post['author_nickname'],
+                    'created_at': post['created_at'].isoformat()
+                }
+            })
+        
+        # 새 댓글 알림
+        for comment in recent_comments:
+            updates.append({
+                'type': 'new_comment',
+                'data': {
+                    'comment_id': str(comment['id']),
+                    'post_title': comment['post__title'],
+                    'author': comment['author_nickname'],
+                    'created_at': comment['created_at'].isoformat()
+                }
+            })
+        
+        # 마지막 확인 시간 업데이트
+        request.session['last_check_time'] = current_time.isoformat()
+        
+        return JsonResponse({
+            'has_updates': len(updates) > 0,
+            'updates': updates
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': '업데이트 확인 중 오류가 발생했습니다.'})

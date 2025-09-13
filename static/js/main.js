@@ -1,13 +1,14 @@
 // 사내 익명 게시판 메인 JavaScript
 
 // 전역 변수
-let websocket = null;
 let sessionId = null;
+let pollingInterval = null;
+let lastUpdateTime = Date.now();
 
 // DOM이 로드되면 실행
 document.addEventListener('DOMContentLoaded', function() {
     initializeSession();
-    initializeWebSocket();
+    initializePolling();
     initializeEventListeners();
 });
 
@@ -28,83 +29,68 @@ function generateUUID() {
     });
 }
 
-// WebSocket 초기화
-function initializeWebSocket() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws/board/`;
-    
+// 폴링 초기화
+function initializePolling() {
+    updateConnectionStatus(true);
+    startPolling();
+}
+
+// 폴링 시작
+function startPolling() {
+    stopPolling();
+    pollingInterval = setInterval(checkForUpdates, 5000); // 5초마다 확인
+}
+
+// 폴링 중지
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+// 업데이트 확인
+async function checkForUpdates() {
     try {
-        websocket = new WebSocket(wsUrl);
+        const response = await fetch('/api/check-updates/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
         
-        websocket.onopen = function(event) {
-            console.log('WebSocket 연결됨');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.has_updates) {
+                handleUpdates(data.updates);
+            }
             updateConnectionStatus(true);
-            // 연결 성공 시 하트비트 시작
-            startHeartbeat();
-        };
-        
-        websocket.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            handleWebSocketMessage(data);
-        };
-        
-        websocket.onclose = function(event) {
-            console.log('WebSocket 연결 끊어짐');
-            updateConnectionStatus(false);
-            stopHeartbeat();
-            // 3초 후 재연결 시도
-            setTimeout(initializeWebSocket, 3000);
-        };
-        
-        websocket.onerror = function(error) {
-            console.error('WebSocket 오류:', error);
-            updateConnectionStatus(false);
-        };
-    } catch (error) {
-        console.error('WebSocket 연결 실패:', error);
-        updateConnectionStatus(false);
-        // 5초 후 재시도
-        setTimeout(initializeWebSocket, 5000);
-    }
-}
-
-// 하트비트 관리
-let heartbeatInterval = null;
-
-function startHeartbeat() {
-    stopHeartbeat();
-    heartbeatInterval = setInterval(() => {
-        if (websocket && websocket.readyState === WebSocket.OPEN) {
-            websocket.send(JSON.stringify({type: 'ping'}));
         } else {
-            // 연결이 끊어진 경우 재연결 시도
-            initializeWebSocket();
+            updateConnectionStatus(false);
         }
-    }, 30000); // 30초마다 하트비트
-}
-
-function stopHeartbeat() {
-    if (heartbeatInterval) {
-        clearInterval(heartbeatInterval);
-        heartbeatInterval = null;
+    } catch (error) {
+        console.error('업데이트 확인 실패:', error);
+        updateConnectionStatus(false);
     }
 }
 
-// WebSocket 메시지 처리
-function handleWebSocketMessage(data) {
-    switch (data.type) {
-        case 'new_post':
-            handleNewPostNotification(data);
-            break;
-        case 'new_comment':
-            handleNewCommentNotification(data);
-            break;
-        case 'reaction_update':
-            handleReactionUpdate(data);
-            break;
-        default:
-            console.log('알 수 없는 메시지 타입:', data.type);
-    }
+// 업데이트 처리
+function handleUpdates(updates) {
+    updates.forEach(update => {
+        switch (update.type) {
+            case 'new_post':
+                handleNewPostNotification(update);
+                break;
+            case 'new_comment':
+                handleNewCommentNotification(update);
+                break;
+            case 'reaction_update':
+                handleReactionUpdate(update);
+                break;
+            default:
+                console.log('알 수 없는 업데이트 타입:', update.type);
+        }
+    });
 }
 
 // 새 게시글 알림 처리
@@ -141,13 +127,13 @@ function updateConnectionStatus(isConnected) {
         const text = statusElement.querySelector('span');
         
         if (isConnected) {
-            icon.className = 'fas fa-wifi text-success me-2';
-            text.textContent = '실시간 업데이트 연결됨';
+            icon.className = 'fas fa-sync-alt text-success me-2';
+            text.textContent = '실시간 업데이트 활성화';
             statusElement.className = 'card mt-3 border-success';
         } else {
-            icon.className = 'fas fa-wifi text-danger me-2';
-            text.textContent = '실시간 업데이트 연결 끊어짐';
-            statusElement.className = 'card mt-3 border-danger';
+            icon.className = 'fas fa-exclamation-triangle text-warning me-2';
+            text.textContent = '업데이트 확인 중...';
+            statusElement.className = 'card mt-3 border-warning';
         }
     }
 }

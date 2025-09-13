@@ -151,8 +151,8 @@
         <!-- 실시간 업데이트 알림 -->
         <div class="card mt-3" id="realtime-status">
             <div class="card-body text-center">
-                <i class="fas fa-wifi text-success me-2"></i>
-                <span class="text-muted">실시간 업데이트 연결됨</span>
+                <i class="fas fa-sync-alt text-success me-2"></i>
+                <span class="text-muted">실시간 업데이트 활성화</span>
             </div>
         </div>
     </div>
@@ -215,135 +215,47 @@
 
 {% block scripts %}
 <script>
-// 세션 ID 생성 (익명 사용자 식별용)
-let sessionId = localStorage.getItem('sessionId') || generateUUID();
-if (!localStorage.getItem('sessionId')) {
-    localStorage.setItem('sessionId', sessionId);
-}
-
-function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0,
-            v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
-
-// CSRF 토큰 가져오기
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
 // 게시글 작성 폼 처리
-document.getElementById('writePostForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const csrfToken = getCookie('csrftoken');
-    
-    const data = {
-        title: formData.get('title'),
-        content: formData.get('content'),
-        author_nickname: formData.get('author_nickname') || '익명'
-    };
-    
-    try {
-        const response = await fetch('/api/post/create/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken,
-            },
-            body: JSON.stringify(data)
+document.addEventListener('DOMContentLoaded', function() {
+    const writePostForm = document.getElementById('writePostForm');
+    if (writePostForm) {
+        writePostForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const csrfToken = getCookie('csrftoken');
+            
+            const data = {
+                title: formData.get('title'),
+                content: formData.get('content'),
+                author_nickname: formData.get('author_nickname') || '익명'
+            };
+            
+            try {
+                const response = await fetch('/api/post/create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('게시글이 작성되었습니다!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('writePostModal')).hide();
+                    this.reset();
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showNotification(result.error || '게시글 작성에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showNotification('네트워크 오류가 발생했습니다.', 'error');
+            }
         });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            showNotification('게시글이 작성되었습니다!', 'success');
-            bootstrap.Modal.getInstance(document.getElementById('writePostModal')).hide();
-            this.reset();
-            location.reload(); // 페이지 새로고침으로 새 게시글 표시
-        } else {
-            showNotification(result.error || '게시글 작성에 실패했습니다.', 'error');
-        }
-    } catch (error) {
-        showNotification('네트워크 오류가 발생했습니다.', 'error');
     }
 });
-
-// 반응 버튼 처리
-document.querySelectorAll('.reaction-btn').forEach(btn => {
-    btn.addEventListener('click', async function() {
-        const postId = this.dataset.postId;
-        const reactionType = this.dataset.reactionType;
-        
-        try {
-            const csrfToken = getCookie('csrftoken');
-            const response = await fetch(`/api/post/${postId}/reaction/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                },
-                body: JSON.stringify({
-                    reaction_type: reactionType,
-                    session_id: sessionId
-                })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-                // 해당 게시글의 반응 버튼 업데이트
-                const postCard = document.querySelector(`[data-post-id="${postId}"]`);
-                const likeBtn = postCard.querySelector('[data-reaction-type="like"]');
-                const dislikeBtn = postCard.querySelector('[data-reaction-type="dislike"]');
-                
-                likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> ${result.likes_count}`;
-                dislikeBtn.innerHTML = `<i class="fas fa-thumbs-down"></i> ${result.dislikes_count}`;
-                
-                // 버튼 상태 업데이트 (시각적 피드백)
-                if (reactionType === 'like') {
-                    likeBtn.classList.toggle('btn-success', result.action === 'added');
-                    likeBtn.classList.toggle('btn-outline-success', result.action !== 'added');
-                } else {
-                    dislikeBtn.classList.toggle('btn-danger', result.action === 'added');
-                    dislikeBtn.classList.toggle('btn-outline-danger', result.action !== 'added');
-                }
-            }
-        } catch (error) {
-            showNotification('반응 처리 중 오류가 발생했습니다.', 'error');
-        }
-    });
-});
-
-// 알림 표시 함수
-function showNotification(message, type = 'info') {
-    const toast = document.getElementById('notificationToast');
-    const messageEl = document.getElementById('notificationMessage');
-    
-    messageEl.textContent = message;
-    
-    // 타입에 따른 아이콘 변경
-    const icon = toast.querySelector('i');
-    icon.className = type === 'success' ? 'fas fa-check-circle text-success me-2' :
-                    type === 'error' ? 'fas fa-exclamation-circle text-danger me-2' :
-                    'fas fa-info-circle text-primary me-2';
-    
-    const toastInstance = new bootstrap.Toast(toast);
-    toastInstance.show();
-}
 </script>
 {% endblock %}
