@@ -55,16 +55,42 @@
                         </div>
                         
                         <div class="post-reactions">
-                            <button class="btn btn-sm btn-outline-success reaction-btn" 
-                                    data-post-id="{{ post.id }}" 
-                                    data-reaction-type="like"
-                                    title="좋아요">
-                                <i class="fas fa-thumbs-up"></i> {{ post.likes_count }}
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger ms-2 delete-post-btn" 
+                            <div class="d-flex flex-wrap gap-1 mb-2">
+                                <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
+                                        data-post-id="{{ post.id }}" 
+                                        data-reaction-type="like"
+                                        title="좋아요">
+                                    👍 <span class="reaction-count">{{ post.likes_count }}</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
+                                        data-post-id="{{ post.id }}" 
+                                        data-reaction-type="heart"
+                                        title="하트">
+                                    ❤️ <span class="reaction-count">{{ post.hearts_count }}</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
+                                        data-post-id="{{ post.id }}" 
+                                        data-reaction-type="laugh"
+                                        title="웃음">
+                                    😂 <span class="reaction-count">{{ post.laughs_count }}</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
+                                        data-post-id="{{ post.id }}" 
+                                        data-reaction-type="wow"
+                                        title="놀람">
+                                    😮 <span class="reaction-count">{{ post.wows_count }}</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
+                                        data-post-id="{{ post.id }}" 
+                                        data-reaction-type="sad"
+                                        title="슬픔">
+                                    😢 <span class="reaction-count">{{ post.sads_count }}</span>
+                                </button>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger delete-post-btn" 
                                     data-post-id="{{ post.id }}" 
                                     title="게시글 삭제">
-                                <i class="fas fa-trash"></i>
+                                <i class="fas fa-trash"></i> 삭제
                             </button>
                         </div>
                     </div>
@@ -257,6 +283,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // 이모지 반응 이벤트 리스너 추가
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.emoji-reaction')) {
+            e.preventDefault();
+            const btn = e.target.closest('.emoji-reaction');
+            const postId = btn.dataset.postId;
+            const commentId = btn.dataset.commentId;
+            const reactionType = btn.dataset.reactionType;
+            
+            if (postId) {
+                utils.toggleEmojiReaction('post', postId, reactionType);
+            } else if (commentId) {
+                utils.toggleEmojiReaction('comment', commentId, reactionType);
+            }
+        }
+    });
 });
 </script>
 {% endblock %}

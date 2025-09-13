@@ -34,42 +34,37 @@
                 <!-- 게시글 반응 -->
                 <div class="post-reactions mb-3">
                     <div class="d-flex flex-wrap gap-2 mb-3">
-                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
+                        <button class="btn btn-outline-primary reaction-btn emoji-reaction" 
                                 data-post-id="{{ post.id }}" 
                                 data-reaction-type="like"
                                 title="좋아요">
                             👍 <span class="reaction-count">{{ post.likes_count }}</span>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger reaction-btn emoji-reaction" 
+                        <button class="btn btn-outline-primary reaction-btn emoji-reaction" 
                                 data-post-id="{{ post.id }}" 
                                 data-reaction-type="heart"
                                 title="하트">
                             ❤️ <span class="reaction-count">{{ post.hearts_count }}</span>
                         </button>
-                        <button class="btn btn-sm btn-outline-warning reaction-btn emoji-reaction" 
+                        <button class="btn btn-outline-primary reaction-btn emoji-reaction" 
                                 data-post-id="{{ post.id }}" 
                                 data-reaction-type="laugh"
                                 title="웃음">
                             😂 <span class="reaction-count">{{ post.laughs_count }}</span>
                         </button>
-                        <button class="btn btn-sm btn-outline-info reaction-btn emoji-reaction" 
+                        <button class="btn btn-outline-primary reaction-btn emoji-reaction" 
                                 data-post-id="{{ post.id }}" 
                                 data-reaction-type="wow"
                                 title="놀람">
                             😮 <span class="reaction-count">{{ post.wows_count }}</span>
                         </button>
-                        <button class="btn btn-sm btn-outline-secondary reaction-btn emoji-reaction" 
+                        <button class="btn btn-outline-primary reaction-btn emoji-reaction" 
                                 data-post-id="{{ post.id }}" 
                                 data-reaction-type="sad"
                                 title="슬픔">
                             😢 <span class="reaction-count">{{ post.sads_count }}</span>
                         </button>
                     </div>
-                    <button class="btn btn-outline-danger delete-post-btn" 
-                            data-post-id="{{ post.id }}" 
-                            title="게시글 삭제">
-                        <i class="fas fa-trash"></i> 삭제
-                    </button>
                 </div>
             </div>
         </div>
@@ -115,29 +110,29 @@
                                                 title="좋아요">
                                             👍 <span class="reaction-count">{{ comment.likes_count }}</span>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger reaction-btn emoji-reaction" 
+                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
                                                 data-comment-id="{{ comment.id }}" 
                                                 data-reaction-type="heart"
                                                 title="하트">
-                                            ❤️ <span class="reaction-count">0</span>
+                                            ❤️ <span class="reaction-count">{{ comment.hearts_count }}</span>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-warning reaction-btn emoji-reaction" 
+                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
                                                 data-comment-id="{{ comment.id }}" 
                                                 data-reaction-type="laugh"
                                                 title="웃음">
-                                            😂 <span class="reaction-count">0</span>
+                                            😂 <span class="reaction-count">{{ comment.laughs_count }}</span>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-info reaction-btn emoji-reaction" 
+                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
                                                 data-comment-id="{{ comment.id }}" 
                                                 data-reaction-type="wow"
                                                 title="놀람">
-                                            😮 <span class="reaction-count">0</span>
+                                            😮 <span class="reaction-count">{{ comment.wows_count }}</span>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-secondary reaction-btn emoji-reaction" 
+                                        <button class="btn btn-sm btn-outline-primary reaction-btn emoji-reaction" 
                                                 data-comment-id="{{ comment.id }}" 
                                                 data-reaction-type="sad"
                                                 title="슬픔">
-                                            😢 <span class="reaction-count">0</span>
+                                            😢 <span class="reaction-count">{{ comment.sads_count }}</span>
                                         </button>
                                     </div>
                                 </div>
