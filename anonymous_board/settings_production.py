@@ -6,10 +6,12 @@ import os
 from .settings import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-production')
+# Use a fallback secret key for Railway deployment
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-j$$icw@pcx)vw3+$-wwi-f1veqz-d*u^a$@6fpwlfb1xkynloo')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# Temporarily enable DEBUG to see error details
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']  # Railway에서 사용할 도메인 허용
 
@@ -29,10 +31,13 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Additional static files settings for Railway
-import os
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-]
+# Note: STATICFILES_DIRS should not include directories that are also in STATIC_ROOT
+if not os.path.exists(BASE_DIR / 'staticfiles'):
+    STATICFILES_DIRS = [
+        BASE_DIR / 'static',
+    ]
+else:
+    STATICFILES_DIRS = []
 
 # Ensure static files are served correctly
 MIDDLEWARE = [
