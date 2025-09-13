@@ -222,7 +222,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const formData = new FormData(this);
-            const csrfToken = getCookie('csrftoken');
+            // Get CSRF token from the form
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             
             const data = {
                 title: formData.get('title'),
@@ -243,15 +244,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
                 
                 if (result.success) {
-                    showNotification('게시글이 작성되었습니다!', 'success');
+                    alert('게시글이 작성되었습니다!');
                     bootstrap.Modal.getInstance(document.getElementById('writePostModal')).hide();
                     this.reset();
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    showNotification(result.error || '게시글 작성에 실패했습니다.', 'error');
+                    alert(result.error || '게시글 작성에 실패했습니다.');
                 }
             } catch (error) {
-                showNotification('네트워크 오류가 발생했습니다.', 'error');
+                console.error('Error:', error);
+                alert('네트워크 오류가 발생했습니다.');
             }
         });
     }
