@@ -10,14 +10,14 @@
         <div class="card mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h1 class="h3 mb-0 text-white">{{ post.title }}</h1>
+                    <h1 class="h3 mb-0 text-dark">{{ post.title }}</h1>
                     <a href="{% url 'board:index' %}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-1"></i>목록으로
                     </a>
                 </div>
                 
                 <div class="post-meta mb-4">
-                    <div class="d-flex align-items-center text-white">
+                    <div class="d-flex align-items-center text-dark">
                         <i class="fas fa-crown me-2 text-warning"></i>
                         <span class="me-3">{{ post.author_nickname }}</span>
                         <i class="fas fa-calendar-alt me-2 text-info"></i>
@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 
-                <div class="post-content mb-4 text-white">
+                <div class="post-content mb-4 text-dark">
                     {{ post.content|linebreaks }}
                 </div>
                 
@@ -66,7 +66,7 @@
         <!-- 댓글 섹션 -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0 text-white">댓글 {{ comments|length }}개</h5>
+                <h5 class="mb-0 text-dark">댓글 {{ comments|length }}개</h5>
             </div>
             <div class="card-body">
                 <!-- 댓글 작성 폼 -->
@@ -91,11 +91,11 @@
                             <div class="comment-content flex-grow-1">
                                 <div class="comment-meta mb-2">
                                     <i class="fas fa-comment me-2 text-primary"></i>
-                                    <strong class="text-white">{{ comment.author_nickname }}</strong>
+                                    <strong class="text-dark">{{ comment.author_nickname }}</strong>
                                     <i class="fas fa-clock ms-3 me-1 text-info"></i>
-                                    <small class="text-white ms-1">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                                    <small class="text-dark ms-1">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
                                 </div>
-                                <p class="mb-3 text-white">{{ comment.content|linebreaks }}</p>
+                                <p class="mb-3 text-dark">{{ comment.content|linebreaks }}</p>
                             </div>
                         </div>
                     </div>
