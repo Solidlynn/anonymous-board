@@ -66,7 +66,7 @@
         <!-- 댓글 섹션 -->
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0 text-dark">댓글 {{ comments|length }}개</h5>
+                <h5 class="mb-0 text-white">댓글 {{ comments|length }}개</h5>
             </div>
             <div class="card-body">
                 <!-- 댓글 작성 폼 -->
@@ -86,16 +86,19 @@
                 <!-- 댓글 목록 -->
                 <div class="comments-list">
                     {% for comment in comments %}
-                    <div class="comment-item border-bottom pb-4 mb-4">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div class="comment-content flex-grow-1">
-                                <div class="comment-meta mb-2">
-                                    <i class="fas fa-comment me-2 text-primary"></i>
-                                    <strong class="text-dark">{{ comment.author_nickname }}</strong>
-                                    <i class="fas fa-clock ms-3 me-1 text-info"></i>
-                                    <small class="text-dark ms-1">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                    <div class="comment-item bg-light rounded-3 p-3 mb-3 shadow-sm">
+                        <div class="comment-content">
+                            <div class="comment-meta mb-2 d-flex align-items-center">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user text-white" style="font-size: 14px;"></i>
                                 </div>
-                                <p class="mb-3 text-dark">{{ comment.content|linebreaks }}</p>
+                                <div>
+                                    <strong class="text-dark d-block">{{ comment.author_nickname }}</strong>
+                                    <small class="text-muted">{{ comment.created_at|date:"Y-m-d H:i" }}</small>
+                                </div>
+                            </div>
+                            <div class="comment-text ps-5">
+                                <p class="mb-0 text-dark">{{ comment.content|linebreaks }}</p>
                             </div>
                         </div>
                     </div>
@@ -112,7 +115,7 @@
         <div class="position-sticky" style="top: 20px;">
             <div class="card">
                 <div class="card-header">
-                    <h6 class="mb-0">게시글 정보</h6>
+                    <h6 class="mb-0 text-white">게시글 정보</h6>
                 </div>
                 <div class="card-body">
                     <div class="info-item mb-3">

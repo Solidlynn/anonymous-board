@@ -68,7 +68,7 @@ function stopPolling() {
 // 업데이트 확인
 async function checkForUpdates() {
     try {
-        const response = await fetch('/api/check-updates/', {
+        const response = await fetch('/api/updates/', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
