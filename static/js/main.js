@@ -51,10 +51,11 @@ function initializePolling() {
     startPolling();
 }
 
-// 폴링 시작
+// 폴링 시작 (비활성화)
 function startPolling() {
-    stopPolling();
-    pollingInterval = setInterval(checkForUpdates, 5000); // 5초마다 확인
+    // 실시간 업데이트 폴링 비활성화
+    // stopPolling();
+    // pollingInterval = setInterval(checkForUpdates, 5000); // 5초마다 확인
 }
 
 // 폴링 중지
